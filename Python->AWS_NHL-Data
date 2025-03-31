@@ -1,0 +1,63 @@
+import pandas as pd
+from datetime import date
+from datetime import datetime, timedelta
+import boto3
+
+# gets the url and reads it for the NHL dataset that I want
+url = ("https://www.hockey-reference.com/leagues/NHL_2025_games.html")
+df_unprocessed = pd.read_html(url)
+
+# grabs the first indexed table to remove the other unneeded tables and clutter
+df = df_unprocessed[0]
+
+# change the date to a datetime
+dates = pd.to_datetime(df['Date'], format = "%Y-%m-%d").dt.date
+df['Date'] = dates
+
+# rename columns to make the headers more understandable
+df.rename(columns={'Date': 'Date_of_Game', 'G': 'Away_Goals', 'G.1': 'Home_Goals'}, inplace = True)
+
+# gets the current date and subtracts 1 from it so the dataset is dynamic and ends 1 day before the current day
+current_date = date.today()
+end_date = current_date - timedelta(days=1)
+
+# I only want the most recent 2 months of games, so I created a variable
+    # to start the dataset at 61 days prior to the current date
+start_date = current_date - timedelta(days=60)
+
+# creates a new dataframe to only pull in the data between the start date and the end date (most recent 2 months)
+date_range = (df['Date_of_Game'] >= start_date) & (df['Date_of_Game'] <= end_date)
+filtered_df = df.loc[date_range]
+
+# outputs the filtered dataset into a csv
+output_path = r"C:\Users\mulka\Downloads\NHL Games.csv"
+filtered_df.to_csv(output_path, index = False)
+
+
+# The below block of code writes the NHL data into an AWS S3 bucket that I created,
+#   which is then loaded into AWS Redshift for users to query data from
+
+AWS_S3_BUCKET_NAME = 'kyle-nhl-games-last2months'
+AWS_REGION = 'us-east-2'
+AWS_ACCESS_KEY = '**********'
+AWS_SECRET_KEY = '**********'
+
+LOCAL_FILE = r"C:\Users\mulka\Downloads\NHL Games.csv"
+NAME_FOR_S3 = 'NHL Games.csv'
+
+def main():
+    print('in main method')
+
+    s3_client = boto3.client(
+        service_name='s3',
+        region_name=AWS_REGION,
+        aws_access_key_id=AWS_ACCESS_KEY,
+        aws_secret_access_key=AWS_SECRET_KEY
+    )
+
+    response = s3_client.upload_file(LOCAL_FILE, AWS_S3_BUCKET_NAME, NAME_FOR_S3)
+
+    print(f'upload_log_to_aws response: {response}')
+
+if __name__ == '__main__':
+    main()
