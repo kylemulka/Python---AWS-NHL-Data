@@ -1,7 +1,7 @@
 # Python -> AWS-NHL-Data
 Since I am a hockey fan and like to track average stats by team, 
 I created a python script which grabs every game and score from a URL in the 2024-2025 season,
-then filters the dataset to the last 2 months of games (in this case, I am more interested in the average goals for and goals against for just the most recent 2 months).
+then filters the dataset to the last 2 months of games (in this case, I am more interested in the average goals scored by team for only the most recent 2 months).
 
 The python script updates the dataset daily to pull in the most recent 2 months of game data as I have the start_date and end_date set to dynamic date variables.
 
