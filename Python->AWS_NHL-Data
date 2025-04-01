@@ -22,7 +22,7 @@ current_date = date.today()
 end_date = current_date - timedelta(days=1)
 
 # I only want the most recent 2 months of games, so I created a variable
-    # to start the dataset at 61 days prior to the current date
+    # to start the dataset at 60 days prior to the current date
 start_date = current_date - timedelta(days=60)
 
 # creates a new dataframe to only pull in the data between the start date and the end date (most recent 2 months)
